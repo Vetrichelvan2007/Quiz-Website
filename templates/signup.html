@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Signup</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<style>
+    :root {
+      --primary: #0057d9;   /* Blue */
+      --secondary: #ffb300; /* Yellow */
+      --background: #ffffff;
+      --surface: #ffffff;
+      --text-dark: #222;
+      --text-light: #fff;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --radius: 14px;
+      --transition: 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--background);
+    }
+
+    .signup-container {
+      background: var(--surface);
+      padding: 40px 35px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 360px;
+      animation: fadeIn 0.8s ease-in-out;
+      position: relative;
+      border-top: 5px solid var(--primary);
+    }
+
+    .signup-container h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--primary);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      background-color: #fafafa;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .input-group label {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      color: #666;
+      pointer-events: none;
+      font-size: 15px;
+      transition: 0.3s ease all;
+      background-color: var(--surface);
+      padding: 0 6px;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 5px rgba(0, 87, 217, 0.2);
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label {
+      top: -9px;
+      left: 10px;
+      font-size: 12px;
+      color: var(--primary);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #666;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: var(--text-light);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background-color var(--transition), transform var(--transition);
+    }
+
+    .btn:hover {
+      background: #0042a8;
+      transform: scale(1.03);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .footer a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes fadeIn {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+</style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Signup for Legend</h2>
+    <form action="/signup" method="post">
+      <div class="input-group">
+        <input type="text" id="fullname" required placeholder=" " name="fullname"/>
+        <label for="fullname">Full Name</label>
+      </div>
+      <div class="input-group">
+        <input type="email" id="email" required placeholder=" " name="email" />
+        <label for="email">Email</label>
+      </div>
+      <div class="input-group">
+        <input type="text" id="username" required placeholder=" " name="username" />
+        <label for="username">Username</label>
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" required placeholder=" " name="password"/>
+        <label for="password">Password</label>
+        <span class="toggle-password" onclick="togglePassword()">
+          <i class="fas fa-eye"></i>
+        </span>
+      </div>
+      <button type="submit" class="btn">Create Account</button>
+    </form>
+    <div class="footer">
+      Already have an account? <a href="/login">Login</a>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const pwd = document.getElementById("password");
+      const icon = document.querySelector(".toggle-password i");
+      if (pwd.type === "password") {
+        pwd.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        pwd.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
+    }
+  </script>
+</body>
+</html>

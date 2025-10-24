@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Orbitron', sans-serif;
+    background: #f4f6f8; /* soft light gray background */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  h2 {
+    background: linear-gradient(90deg, #007bff, #00c6ff);
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 0 10px rgba(0,123,255,0.3);
+  }
+
+  .edit-container {
+    max-width: 440px;
+    width: 100%;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-top: 4px solid #ffc107; /* yellow accent */
+  }
+
+  .input-group {
+    position: relative;
+    margin-bottom: 25px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #0056b3;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: #f9fbfd;
+    color: #333;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s ease;
+  }
+
+  input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0,123,255,0.2);
+    background: #ffffff;
+  }
+
+  .toggle-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(to right, #007bff, #00c6ff);
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 10px;
+    transition: 0.3s ease all;
+    box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+  }
+
+  .btn:hover {
+    background: linear-gradient(to right, #00c6ff, #007bff);
+    box-shadow: 0 0 15px rgba(0,123,255,0.5);
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #777;
+  }
+
+  .footer a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div class="edit-container">
+  <h2>Edit Profile</h2>
+  <form action="/editprofile" method="POST">
+
+    <div class="input-group">
+      <label for="teacherId">Teacher ID</label>
+      <input type="text" id="teacherId" name="teacherId" value="{{ teacher.teacher_id }}" readonly />
+    </div>
+
+    <div class="input-group">
+      <label for="teacherName">Teacher Name</label>
+      <input type="text" id="teacherName" name="teacherName" required value="{{ teacher.teacher_name }}"/>
+    </div>
+
+    <div class="input-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required value="{{ teacher.username }}"/>
+    </div>
+
+    <div class="input-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required value="{{ teacher.email }}"/>
+    </div>
+
+    <div class="input-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required value="{{ teacher.password }}"/>
+      <button type="button" class="toggle-btn" onclick="togglePassword()">👁</button>
+    </div>
+
+    <button type="submit" class="btn">Update Profile</button>
+  </form>
+
+  <div class="footer">
+    <a href="/dashboard">← Back to Dashboard</a>
+  </div>
+</div>
+
+<script>
+  function togglePassword() {
+    const passField = document.getElementById("password");
+    passField.type = passField.type === "password" ? "text" : "password";
+  }
+</script>
+
+</body>
+</html>

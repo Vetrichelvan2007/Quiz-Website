@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background-color: #f3f6fa; /* Soft light gray-blue background */
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 40px 0;
+    }
+
+    .login-container {
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+      width: 600px;
+      animation: fadeIn 0.8s ease-in-out;
+      border: 1px solid #e0e4ea;
+      position: relative;
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #006ee6;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px;
+      background: #f9fbfd;
+      border: 2px solid #ccd7e2;
+      border-radius: 8px;
+      color: #333;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      appearance: none;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #0078ff;
+      box-shadow: 0 0 6px rgba(0, 120, 255, 0.3);
+      background: #ffffff;
+    }
+
+    .input-group label {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      color: #666;
+      pointer-events: none;
+      transition: 0.3s ease all;
+      background: #fff;
+      padding: 0 4px;
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label,
+    .input-group select:focus + label,
+    .input-group select:not([value=""]) + label {
+      top: -10px;
+      left: 10px;
+      font-size: 12px;
+      color: #0078ff;
+    }
+
+    .time-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .time-container .input-group {
+      flex: 1;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(to right, #0078ff, #00b4ff);
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 10px;
+      transition: 0.3s ease all;
+    }
+
+    .btn:hover {
+      background: linear-gradient(to right, #00b4ff, #0078ff);
+      box-shadow: 0 0 10px rgba(0, 120, 255, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Create Quiz</h2>
+
+    <form action="/createquiz" method="POST">
+      <div class="input-group">
+        <input type="text" required placeholder=" " name="quiz_name" id="quiz_name">
+        <label for="quiz_name">Quiz Name</label>
+      </div>
+
+      <div class="input-group">
+        <input type="text" required placeholder=" " name="subject" id="subject">
+        <label for="subject">Subject</label>
+      </div>
+
+      <!-- Department Dropdown -->
+      <div class="input-group">
+        <select name="dept" id="dept" required>
+          <option value="" disabled selected hidden>Select Department</option>
+          {% for dept in departments %}
+            <option value="{{ dept }}">{{ dept }}</option>
+          {% endfor %}
+        </select>
+        <label for="dept">Department</label>
+      </div>
+
+      <!-- Class Dropdown -->
+      <div class="input-group">
+        <select name="class" id="class" required>
+          <option value="" disabled selected hidden>Select Class</option>
+        </select>
+        <label for="class">Class</label>
+      </div>
+
+      <div class="input-group">
+        <input type="text" required placeholder=" " name="no_of_questions" id="no_of_questions">
+        <label for="no_of_questions">Number Of Questions</label>
+      </div>
+
+      <div class="input-group">
+        <input type="number" required placeholder=" " name="mark_per_question" id="mark_per_question">
+        <label for="mark_per_question">Mark per Question</label>
+      </div>
+
+      <div class="input-group">
+        <input type="date" required placeholder=" " name="start_date" id="start_date">
+        <label for="start_date">Start Date</label>
+      </div>
+
+      <!-- Start Time -->
+      <div class="time-container">
+        <div class="input-group">
+          <input type="text" required placeholder=" " name="start_time" id="start_time" pattern="^(0?[1-9]|1[0-2]):[0-5][0-9]$">
+          <label for="start_time">Start Time (HH:MM)</label>
+        </div>
+        <div class="input-group">
+          <select name="start_ampm" required>
+            <option value="" disabled selected hidden></option>
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+          <label>AM/PM</label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input type="date" required placeholder=" " name="end_date" id="end_date">
+        <label for="end_date">End Date</label>
+      </div>
+
+      <!-- End Time -->
+      <div class="time-container">
+        <div class="input-group">
+          <input type="text" required placeholder=" " name="end_time" id="end_time" pattern="^(0?[1-9]|1[0-2]):[0-5][0-9]$">
+          <label for="end_time">End Time (HH:MM)</label>
+        </div>
+        <div class="input-group">
+          <select name="end_ampm" required>
+            <option value="" disabled selected hidden></option>
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+          <label>AM/PM</label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input type="number" required placeholder=" " name="duration_minutes" id="duration_minutes">
+        <label for="duration_minutes">Duration (minutes)</label>
+      </div>
+
+      <button type="submit" class="btn">Start Creating Quiz</button>
+    </form>
+  </div>
+
+  <script>
+  // ✅ Load classes dynamically when department changes
+  document.getElementById("dept").addEventListener("change", async function () {
+    const deptName = this.value;
+    const response = await fetch(`/get_classes/${encodeURIComponent(deptName)}`);
+    const classes = await response.json();
+
+    const classSelect = document.getElementById("class");
+    classSelect.innerHTML = '<option value="" disabled selected hidden>Select Class</option>';
+    classes.forEach(cls => {
+      const option = document.createElement("option");
+      option.value = cls;
+      option.textContent = cls;
+      classSelect.appendChild(option);
+    });
+  });
+
+  // ✅ Frontend validation for start/end time
+  document.querySelector("form").addEventListener("submit", function (e) {
+    const startDate = document.getElementById("start_date").value;
+    const startTime = document.getElementById("start_time").value;
+    const startAMPM = document.querySelector("select[name='start_ampm']").value;
+    const endDate = document.getElementById("end_date").value;
+    const endTime = document.getElementById("end_time").value;
+    const endAMPM = document.querySelector("select[name='end_ampm']").value;
+
+    if (!startDate || !startTime || !startAMPM || !endDate || !endTime || !endAMPM) {
+      alert("Please fill in all date and time fields.");
+      e.preventDefault();
+      return;
+    }
+
+    function parse12HourTime(dateStr, timeStr, ampm) {
+      let [hour, minute] = timeStr.split(":").map(Number);
+      if (ampm === "PM" && hour < 12) hour += 12;
+      if (ampm === "AM" && hour === 12) hour = 0;
+      return new Date(`${dateStr}T${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00`);
+    }
+
+    const startDateTime = parse12HourTime(startDate, startTime, startAMPM);
+    const endDateTime = parse12HourTime(endDate, endTime, endAMPM);
+
+    if (endDateTime <= startDateTime) {
+      alert("End date and time must be after start date and time.");
+      e.preventDefault();
+    }
+  });
+  </script>
+</body>
+</html>

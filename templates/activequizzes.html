@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz History</title>
+  <style>
+    :root {
+      --primary: #2d5bff;
+      --secondary: #ffb300;
+      --success: #00c853;
+      --danger: #e53935;
+      --background: #f4f6fb;
+      --surface: #ffffff;
+      --text-dark: #222;
+      --text-light: #ffffff;
+      --border-radius: 12px;
+      --transition: 0.3s ease;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background-color: var(--background);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background-color: var(--surface);
+      padding: 15px 25px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .profile-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--secondary);
+      color: var(--text-light);
+      font-size: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color var(--transition);
+    }
+
+    .profile-btn:hover {
+      background-color: #ffa000;
+    }
+
+    /* Main Content */
+    .page-container {
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .active-quiz-section {
+      background-color: var(--surface);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .active-quiz-section h2 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .quiz-card {
+      background-color: var(--background);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform var(--transition), box-shadow var(--transition);
+      border-left: 5px solid var(--primary);
+    }
+
+    .quiz-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .quiz-card h3 {
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .quiz-card p {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .quiz-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .quiz-card button {
+      background-color: var(--success);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color var(--transition), transform var(--transition);
+    }
+
+    .quiz-card button:hover {
+      background-color: #009f45;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .page-container { padding: 20px; }
+      .active-quiz-section h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="profile-btn"></div>
+  </div>
+
+  <div class="page-container">
+    <div class="active-quiz-section">
+      <h2>Quiz History</h2>
+      <div class="quiz-grid">
+        {% for quiz in quizzes %}
+        <div class="quiz-card">
+          <div>
+            <h3>{{ quiz.name }}</h3>
+            <p><strong>Subject:</strong> {{ quiz.subject }}</p>
+            <p><strong>Questions:</strong> {{ quiz.no_of_question }}</p>
+            <p><strong>Marks:</strong> {{ quiz.total_marks }}</p>
+            <p><strong>Start:</strong> {{ quiz.start_date }} {{ quiz.starttime }}</p>
+            <p><strong>End:</strong> {{ quiz.end_date }} {{ quiz.endtime }}</p>
+            <p><strong>Status:</strong> {{ quiz.status }}</p>
+          </div>
+          <div class="quiz-footer">
+            {% if role == 'student' %}
+                <a href="{{ url_for('show_result', student_id=student_id, quiz_id=quiz.quiz_id) }}">
+                    <button>View Result</button>
+                </a>
+            {% elif role == 'teacher' %}
+                <a href="{{ url_for('overallresults', quiz_id=quiz.quiz_id) }}">
+                    <button>View Result</button>
+                </a>
+            {% else %}
+                <span>No actions available</span>
+            {% endif %}
+            <span>⏱ {{ quiz.DURATION_MINUTES }} mins</span>
+          </div>
+          
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard | Quiz Portal</title>
+  <style>
+    :root {
+      --primary: #0057d9;
+      --secondary: #ffb300;
+      --success: #00c853;
+      --danger: #e53935;
+      --background: #f5f7fa;
+      --surface: #ffffff;
+      --text-dark: #222;
+      --text-light: #ffffff;
+      --border-radius: 12px;
+      --transition: 0.3s ease;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      display: flex;
+      background-color: var(--background);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SIDE MENU */
+    .side-menu {
+      width: 260px;
+      background-color: var(--primary);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      padding: 25px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      transition: transform var(--transition);
+      z-index: 1000;
+      box-shadow: var(--shadow);
+    }
+
+    .side-menu h2 {
+      font-size: 1.6rem;
+      text-align: center;
+      margin-bottom: 35px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .menu-btn {
+      padding: 14px 18px;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      transition: background-color var(--transition), transform var(--transition);
+    }
+
+    .menu-btn:hover,
+    .menu-btn.active {
+      background-color: rgba(255, 255, 255, 0.15);
+      transform: translateX(5px);
+    }
+
+    /* Hamburger for mobile */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 1100;
+      box-shadow: var(--shadow);
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex-grow: 1;
+      margin-left: 260px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: margin-left var(--transition);
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      background-color: var(--surface);
+      padding: 15px 25px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    /* PROFILE BUTTON */
+    .profile-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--secondary);
+      color: var(--text-light);
+      font-size: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color var(--transition);
+    }
+
+    .profile-btn:hover {
+      background-color: #ffa000;
+    }
+
+    /* PROFILE MENU */
+    .profile-menu {
+      display: none;
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      background-color: var(--surface);
+      box-shadow: var(--shadow);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      min-width: 200px;
+      animation: fadeIn 0.25s ease;
+      z-index: 10;
+    }
+
+    .profile-menu a {
+      display: block;
+      background: white;
+      border: none;
+      padding: 14px 16px;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      transition: background-color var(--transition);
+    }
+
+    .profile-menu a:hover {
+      background-color: #f3f3f3;
+    }
+
+    /* PAGE CONTENT */
+    .page-container {
+      padding: 30px;
+    }
+
+    .dashboard-section {
+      background-color: var(--surface);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .dashboard-section h2 {
+      color: var(--primary);
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .welcome-card {
+      background-color: var(--background);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 25px;
+      border-left: 5px solid var(--secondary);
+    }
+
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .quiz-card {
+      background-color: var(--background);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform var(--transition), box-shadow var(--transition);
+      border-left: 5px solid var(--primary);
+    }
+
+    .quiz-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .quiz-card h3 {
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .quiz-card p {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .quiz-status {
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+
+    .quiz-status.active {
+      background-color: #e0f7e9;
+      color: var(--success);
+    }
+
+    .quiz-status.inactive {
+      background-color: #fdeaea;
+      color: var(--danger);
+    }
+
+    .quiz-card button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color var(--transition), transform var(--transition);
+      margin-top: 10px;
+    }
+
+    .quiz-card button:hover {
+      background-color: #0042a8;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .side-menu {
+        position: fixed;
+        transform: translateX(-100%);
+      }
+
+      .side-menu.show {
+        transform: translateX(0);
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(-10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
+
+  <div class="side-menu" id="sideMenu">
+    <h2>👩‍🏫 Teacher</h2>
+    <div class="menu-btn active" onclick="window.location.href='/createquiz'">➕ Create Quiz</div>
+    <div class="menu-btn" onclick="window.location.href='/activequizzes'">📋  Past Quizzes</div>
+    <div class="menu-btn" onclick="window.location.href='/addstudent'">👥 Add Student</div>
+    <div class="menu-btn" onclick="window.location.href='/viewstudents'">📚 View Students</div>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div class="profile-btn" onclick="toggleProfileMenu()">👤</div>
+      <div class="profile-menu" id="profileMenu">
+        <a href="/editprofile">✏️ Edit Profile</a>
+        <a href="/changepassword">🔐 Change Password</a>
+        <a href="/logout">🚪 Logout</a>
+      </div>
+    </div>
+
+    <div class="page-container">
+      <div class="dashboard-section">
+        <h2>🏫 Teacher Dashboard</h2>
+        <div class="welcome-card">
+          <h3>Welcome, Teacher!</h3>
+          <p>Use the sidebar options to manage your quizzes and students efficiently.</p>
+        </div>
+
+        <h2>📘 Active Quizzes</h2>
+        <div class="quiz-grid">
+          {% if quizzes and quizzes|length > 0 %}
+            {% for quiz in quizzes %}
+              <div class="quiz-card">
+                <div>
+                    <h3>{{ quiz.name }}</h3>
+                    <p><strong>Subject:</strong> {{ quiz.subject }}</p>
+                    <p><strong>Class:</strong> {{ quiz.class_name }}</p>
+                    <p><strong>Dept:</strong> {{ quiz.dept_name }}</p>
+                    <p><strong>Questions:</strong> {{ quiz.no_of_question }}</p>
+                    <p><strong>Marks:</strong> {{ quiz.total_marks }}</p>
+                    <p><strong>Start:</strong> {{ quiz.start_date }} {{ quiz.starttime }}</p>
+                    <p><strong>End:</strong> {{ quiz.end_date }} {{ quiz.endtime }}</p>
+                    <p><strong>Duration (minutes):</strong> {{ quiz.duration_minutes }}</p>
+                    <p><strong>Status:</strong>
+                    <span class="quiz-status {{ 'active' if quiz.status == 'active' else 'inactive' }}">
+                      {{ quiz.status }}
+                    </span>
+                  </p>
+                </div>
+                <button onclick="window.location.href='{{ url_for('overallresults', quiz_id=quiz.quiz_id) }}'">View</button>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No quizzes available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const profileMenu = document.getElementById('profileMenu');
+    const sideMenu = document.getElementById('sideMenu');
+
+    function toggleProfileMenu() {
+      profileMenu.style.display = profileMenu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('.profile-btn') && !event.target.closest('.profile-menu')) {
+        profileMenu.style.display = 'none';
+      }
+    });
+
+    function toggleMenu() {
+      sideMenu.classList.toggle('show');
+    }
+  </script>
+</body>
+</html>

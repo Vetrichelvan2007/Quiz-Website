@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* Light blue background */
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0042a8; /* Your blue */
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #0042a8; /* Header blue */
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffffff; /* White alternate rows */
+        }
+
+        tr:hover {
+            background-color: #ffff99; /* Light yellow hover */
+        }
+
+        .review-btn {
+            padding: 8px 16px;
+            background-color: #0042a8; /* Blue button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .review-btn:hover {
+            background-color: #002f6c; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Results</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Student Name</th>
+                <th>Marks</th>
+                <th>Review</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ loop.index }}</td> <!-- 1-based S.No -->
+                <td>{{ student.name }}</td>
+                <td>{{ student.marks }}/{{student.total_marks}}</td>
+                <td>
+                    <a href="{{ url_for('show_result', student_id=student.student_id, quiz_id=student.quiz_id) }}">
+                        <button class="review-btn">Review</button>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

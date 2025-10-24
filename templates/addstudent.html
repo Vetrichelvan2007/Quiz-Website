@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Student</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #e8f0ff, #cfd9df);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edit-container {
+      background: #f5f8fa;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      width: 400px;
+      animation: fadeIn 0.8s ease-in-out;
+      border: 1px solid #d9e2ec;
+    }
+
+    .edit-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #0078ff;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px;
+      background: #eef3f8;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      color: #333;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      appearance: none;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #0078ff;
+      box-shadow: 0 0 5px rgba(0, 120, 255, 0.3);
+      background: #fff;
+    }
+
+    .input-group label {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      color: #666;
+      pointer-events: none;
+      transition: 0.3s ease all;
+      background: #f5f8fa;
+      padding: 0 4px;
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label,
+    .input-group select:focus + label,
+    .input-group select:not([value=""]) + label {
+      top: -10px;
+      left: 10px;
+      font-size: 12px;
+      color: #0078ff;
+    }
+
+    .input-group select option {
+        background-color: #f5f8fa;
+        color: #333;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(to right, #0078ff, #00b4ff);
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 10px;
+      transition: 0.3s ease all;
+    }
+
+    .btn:hover {
+      background: linear-gradient(to right, #00b4ff, #0078ff);
+      box-shadow: 0 0 10px rgba(0, 120, 255, 0.3);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .footer a {
+      color: #0078ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="edit-container">
+    <h2>Add Student</h2>
+    <form action="/addstudent" method="POST">
+
+      <div class="input-group">
+        <input type="text" id="studentName" name="studentName" required placeholder=" " />
+        <label for="studentName">Student Name</label>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="studentClass" name="studentClass" required placeholder=" " />
+        <label for="studentClass">Class</label>
+      </div>
+
+      <div class="input-group">
+        <select id="studentDept" name="studentDept" required>
+          <option value="" disabled selected hidden></option>
+          <option value="AIDS">AIDS</option>
+          <option value="CSE">CSE</option>
+          <option value="IT">IT</option>
+          <option value="AIML">AIML</option>
+        </select>
+        <label for="studentDept">Department</label>
+      </div>
+
+      <div class="input-group">
+        <input type="email" id="email" name="email" required placeholder=" "/>
+        <label for="email">Email</label>
+      </div>
+
+      <div class="input-group">
+        <input type="password" id="password" name="password" required placeholder=" "/>
+        <label for="password">Password</label>
+      </div>
+
+      <button type="submit" class="btn">Add Student</button>
+    </form>
+
+    <div class="footer">
+      <a href="/dashboard">Back to Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

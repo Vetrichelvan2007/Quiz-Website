@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f6f9fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .quiz-container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 700px;
+    }
+    .question {
+      margin-bottom: 20px;
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 12px;
+    }
+    h1 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 30px;
+    }
+    .option {
+      display: block;
+      margin: 8px 0;
+      padding: 10px;
+      background: white;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .option:hover {
+      background: #e3f2fd;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #1976d2;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .timer {
+      color: red;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Timer Display in MM:SS format -->
+    <div class="timer" id="timer">⏳ Time Left: <span id="time"></span></div>
+
+    <h1>Quiz</h1>
+    <form method="POST">
+      {% for q in quiz_data %}
+      <div class="question">
+        <p><b>{{ loop.index }}. {{ q.question }}</b></p>
+
+        <label class="option">
+          <input type="radio" name="q{{ q.question_id }}" value="op1" required>
+          {{ q.option1 }}
+        </label>
+
+        <label class="option">
+          <input type="radio" name="q{{ q.question_id }}" value="op2">
+          {{ q.option2 }}
+        </label>
+
+        <label class="option">
+          <input type="radio" name="q{{ q.question_id }}" value="op3">
+          {{ q.option3 }}
+        </label>
+
+        <label class="option">
+          <input type="radio" name="q{{ q.question_id }}" value="op4">
+          {{ q.option4 }}
+        </label>
+      </div>
+      {% endfor %}
+
+      <button type="submit" class="submit-btn">Submit Quiz</button>
+    </form>
+  </div>
+
+  <script>
+    let timeLeft = {{ duration }}; // passed from Flask as seconds
+    const timerEl = document.getElementById('time');
+    const form = document.querySelector('form');
+
+    // Format seconds into MM:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // Initial display
+    timerEl.textContent = formatTime(timeLeft);
+
+    // Countdown logic
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerEl.textContent = formatTime(timeLeft);
+
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        form.submit(); // Auto-submit form when time ends
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

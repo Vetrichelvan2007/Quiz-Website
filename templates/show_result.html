@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Result</title>
+<style>
+    body { font-family: Arial, sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; }
+    .container { max-width: 800px; margin: 50px auto; background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { color: #1a73e8; }
+    .question { margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; border-radius: 5px; }
+    .question p { font-weight: bold; }
+    .option { padding: 8px 12px; margin: 5px 0; border-radius: 5px; }
+    .correct { background-color: #d4edda; color: #155724; }
+    .wrong { background-color: #f8d7da; color: #721c24; }
+    .correct-answer { background-color:#e8f0fe; color:#1a73e8; }
+    .finish-btn { display: block; margin: 30px auto 0; padding: 12px 25px; background-color: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .finish-btn:hover { background-color: #1665c1; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Total Score: {{ total_mark }} / {{ total_marks }}</h1>
+    </div>
+
+    {% for q in questions %}
+    <div class="question">
+        <p>{{ loop.index }}. {{ q.question }}</p>
+
+        <div class="option {% if q.correct %}correct{% else %}wrong{% endif %}">
+            Your Answer: {{ q.student_text }}
+        </div>
+
+        <div class="option correct-answer">
+            Correct Answer: {{ q.crt_text }}
+        </div>
+    </div>
+    {% endfor %}
+
+    <button class="finish-btn" onclick="window.history.back()">Finish Review</button>
+</div>
+</body>
+</html>
