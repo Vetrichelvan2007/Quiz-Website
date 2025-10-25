@@ -989,6 +989,9 @@ def editstudentprofile():
     if "student_id" not in session:
         return redirect(url_for("login"))  
     return render_template("editstudentprofile.html", student=session)
+@app.route("editquiz")
+def editquiz():
+    pass
 
 if __name__ == "__main__":
   
