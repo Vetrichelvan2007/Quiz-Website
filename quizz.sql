@@ -158,7 +158,8 @@ CREATE SEQUENCE result_for_quiz_seq
     START WITH 1
     INCREMENT BY 1
     NOCACHE;
-
+commit;
+update quiz set status='active' where quiz_id=3;
 
 SELECT * FROM department;
 SELECT * FROM class;

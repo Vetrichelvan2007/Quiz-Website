@@ -135,45 +135,111 @@ def signup():
 
     return render_template("signup.html")
 
-@app.route('/dashboard', methods=["POST","GET"])
+@app.route('/dashboard', methods=["POST", "GET"])
 def teacher_dashboard():
     if "teacher_id" not in session:
         return redirect(url_for("login"))
 
-    quizzes=[]
+    quizzes = []
+    stats = {"total_quizzes": 0, "active_quizzes": 0, "total_students": 0}
 
     try:
-        connection=connectdb()
-        cursor=connection.cursor()
+        connection = connectdb()
+        cursor = connection.cursor()
 
-        query="""select name,subject,start_date,end_date,duration_minutes,no_of_question,total_marks,status,quiz_id,class_id,dept_id,starttime,endtime
-                 from quiz where created_by=:1 and status=:2 order by start_date desc"""
-        cursor.execute(query,(int(session["teacher_id"]),'active',))
-        rows=cursor.fetchall()
-        
-        for row in rows:
-            class_name=cursor.execute("select class_name from class where class_id=:1",(row[9],)).fetchone()[0]
-            dept_name=cursor.execute("select dept_name from department where dept_id=:1",(row[10],)).fetchone()[0]
-            quizzes.append({
-                "name":row[0],
-                "subject":row[1],
-                "start_date":row[2].strftime("%Y-%m-%d"),
-                "end_date":row[3].strftime("%Y-%m-%d"),
-                "duration_minutes":row[4],
-                "no_of_question":row[5],
-                "total_marks":row[6],
-                "status":row[7],
-                "quiz_id":row[8],
-                "class_name":class_name,
-                "dept_name":dept_name,
-                "starttime":row[11],
-                "endtime":row[12]
-            })
-        
+        query_all = """
+            SELECT name, subject, start_date, end_date, duration_minutes, 
+                   no_of_question, total_marks, status, quiz_id, class_id, dept_id, 
+                   starttime, endtime
+            FROM quiz 
+            WHERE created_by = :1
+            ORDER BY start_date DESC
+        """
+        cursor.execute(query_all, (int(session["teacher_id"]),))
+        all_rows = cursor.fetchall()
+
+        stats["total_quizzes"] = len(all_rows)
+        now = datetime.now()
+        count=0
+        for row in all_rows:
+            count+=1
+            quiz_id = row[8]
+            start_date, end_date = row[2], row[3]
+            start_time_str, end_time_str = row[11], row[12]
+
+            # Parse "07:00 pm" and "08:00 am" safely into time objects
+            try:
+                start_time = datetime.strptime(start_time_str.strip().lower(), "%I:%M %p").time()
+            except Exception:
+                start_time = datetime.strptime("12:00 am", "%I:%M %p").time()
+
+            try:
+                end_time = datetime.strptime(end_time_str.strip().lower(), "%I:%M %p").time()
+            except Exception:
+                end_time = datetime.strptime("11:59 pm", "%I:%M %p").time()
+
+            # Combine date + time for accurate comparisons
+            quiz_start = datetime.combine(start_date, start_time)
+            quiz_end = datetime.combine(end_date, end_time)
+
+            current_status = row[7]
+
+            # ✅ Update logic:
+            #  - Before start → upcoming
+            #  - Between start & end → active
+            #  - After end → inactive
+            if now < quiz_start and current_status != 'upcoming':
+                cursor.execute("UPDATE quiz SET status='upcoming' WHERE quiz_id=:1", (quiz_id,))
+                connection.commit()
+                current_status = 'upcoming'
+
+            elif quiz_start <= now <= quiz_end and current_status != 'active':
+                cursor.execute("UPDATE quiz SET status='active' WHERE quiz_id=:1", (quiz_id,))
+                connection.commit()
+                current_status = 'active'
+
+            elif now > quiz_end and current_status != 'inactive':
+                cursor.execute("UPDATE quiz SET status='inactive' WHERE quiz_id=:1", (quiz_id,))
+                connection.commit()
+                current_status = 'inactive'
+
+            # Fetch class and department names
+            class_name = cursor.execute("SELECT class_name FROM class WHERE class_id=:1", (row[9],)).fetchone()[0]
+            dept_name = cursor.execute("SELECT dept_name FROM department WHERE dept_id=:1", (row[10],)).fetchone()[0]
+
+            quiz_data = {
+                "name": row[0],
+                "subject": row[1],
+                "start_date": row[2].strftime("%Y-%m-%d"),
+                "end_date": row[3].strftime("%Y-%m-%d"),
+                "duration_minutes": row[4],
+                "no_of_question": row[5],
+                "total_marks": row[6],
+                "status": current_status,
+                "quiz_id": row[8],
+                "class_name": class_name,
+                "dept_name": dept_name,
+                "starttime": row[11],
+                "endtime": row[12]
+            }
+
+            if current_status == 'active':
+                stats["active_quizzes"] += 1
+                quizzes.append(quiz_data)
+
+        # Total students count
+        try:
+            stats["total_students"] = cursor.execute("SELECT COUNT(*) FROM student").fetchone()[0]
+        except:
+            stats["total_students"] = 0
+
+        cursor.close()
+        connection.close()
+
     except Exception as e:
         return f"Error: {str(e)}"
 
-    return render_template('teacherhomepage.html', quizzes=quizzes)
+    return render_template('teacherhomepage.html', quizzes=quizzes, stats=stats, total_quizzes=count)
 
 @app.route("/editprofile", methods=["GET", "POST"])
 def editprofile():
@@ -376,6 +442,7 @@ def add_questions(total_questions):
 def activequizzes():
     connection = connectdb()
     cur = connection.cursor()
+    
     if session["role"] == "teacher":
         query = """
         SELECT quiz_id, name, subject, class_id, dept_id, no_of_question, 
@@ -383,7 +450,7 @@ def activequizzes():
             starttime, endtime, status, total_marks
         FROM quiz WHERE created_by = :1
         ORDER BY start_date DESC
-    """
+        """
         cur.execute(query, (int(session["teacher_id"]),))
     elif session["role"] == "student":
         query = """
@@ -407,16 +474,23 @@ def activequizzes():
             "mark_per_question": row[6],
             "start_date": row[7].strftime("%Y-%m-%d"),
             "end_date": row[8].strftime("%Y-%m-%d"),
-            "duration": row[9],
+            "DURATION_MINUTES": row[9],  # Changed to match template
             "starttime": row[10],
             "endtime": row[11],
             "status": row[12],
             "total_marks": row[13]
         })
+    
     cur.close()
     connection.close()
-    return render_template('activequizzes.html',quizzes=quizzes,student_id=session.get("student_id"),role=session.get("role"))
     
+    return render_template(
+        'activequizzes.html',
+        quizzes=quizzes,
+        student_id=session.get("student_id"),
+        role=session.get("role")
+    )   
+
 @app.route("/addstudent", methods=["POST","GET"])
 def addstudent():
     if request.method == "POST":
@@ -472,6 +546,47 @@ def addstudent():
 @app.route('/viewstudents', methods=["GET", "POST"])
 def viewstudents():
     students = []
+    departments = ["AIDS", "CSC", "ECE", "AIML", "IT", "EEE"]
+
+   
+    if request.method == 'POST':
+        delete_id = request.form.get('delete_id')
+        if delete_id:
+            try:
+                delete_id = int(delete_id)  
+                connection = connectdb()
+                cursor = connection.cursor()
+
+                
+                cursor.execute("SELECT user_id FROM student WHERE student_id = :1", (delete_id,))
+                user_row = cursor.fetchone()
+
+                if user_row:
+                    user_id = user_row[0]
+
+                    
+                    cursor.execute("DELETE FROM result_for_each_question WHERE student_id = :1", (delete_id,))
+                    cursor.execute("DELETE FROM result_for_quiz WHERE student_id = :1", (delete_id,))
+
+                    
+                    cursor.execute("DELETE FROM student WHERE student_id = :1", (delete_id,))
+
+                    
+                    cursor.execute("DELETE FROM app_user WHERE user_id = :1", (user_id,))
+
+                    connection.commit()
+                    flash("Student deleted successfully!", "success")
+                else:
+                    flash("Student not found!", "warning")
+
+            except Exception as e:
+                connection.rollback()
+                flash(f"Error deleting student: {e}", "danger")
+            finally:
+                cursor.close()
+                connection.close()
+
+    
     try:
         connection = connectdb()
         cursor = connection.cursor()
@@ -488,7 +603,7 @@ def viewstudents():
         rows = cursor.fetchall()
 
         for row in rows:
-            d = {
+            students.append({
                 "student_id": row[0],
                 "name": row[1],
                 "email": row[2],
@@ -496,24 +611,25 @@ def viewstudents():
                 "password": row[4],
                 "class_name": row[5],
                 "department": row[6]
-            }
-            students.append(d)
+            })
 
         if not students:
             students = [{
-                "student_id": "0",
+                "student_id": 0,
                 "name": "N/A",
                 "email": "N/A",
                 "username": "N/A",
                 "password": "N/A",
                 "class_name": "N/A",
-                "department": "0"
+                "department": "N/A"
             }]
 
     except Exception as e:
-        print("Error fetching students:", e)
+        flash(f"Error fetching students: {e}", "danger")
+    finally:
+        cursor.close()
+        connection.close()
 
-    departments = ["AIDS", "CSC", "ECE", "AIML", "IT", "EEE"]
     return render_template('viewstudents.html', students=students, departments=departments)
 
 @app.route('/editstudent/<int:student_id>', methods=["GET", "POST"])
@@ -639,53 +755,77 @@ def student_dashboard():
         return redirect(url_for("login"))
 
     quizzes = []
+
     try:
         connection = connectdb()
         cursor = connection.cursor()
 
-        today = datetime.today().date()
-        cur_time = datetime.now().time()
+        now = datetime.now()
 
         query = """
             SELECT quiz_id, name, subject, start_date, end_date, duration_minutes, no_of_question, mark_per_question, starttime, endtime, status
             FROM quiz
-            WHERE status='active' AND trunc(start_date) <= trunc(:1) AND trunc(end_date) >= trunc(:2) AND class_id=:3
+            WHERE class_id = :1
             ORDER BY start_date ASC
         """
-        cursor.execute(query, (today, today, class_id))
+        cursor.execute(query, (class_id,))
 
         for row in cursor.fetchall():
-            try:
-                end_time_obj = datetime.strptime(row[9], "%I:%M %p").time()
-            except:
-                end_time_obj = None
+            quiz_id, name, subject, start_date, end_date, duration_minutes, no_of_question, mark_per_question, starttime_str, endtime_str, status = row
 
-            status = row[10]
-            if end_time_obj and cur_time > end_time_obj:
-                cursor.execute("UPDATE quiz SET status='inactive' WHERE quiz_id=:1", (row[0],))
+            # Parse start and end times
+            try:
+                start_time = datetime.strptime(starttime_str.strip().lower(), "%I:%M %p").time()
+            except:
+                start_time = datetime.strptime("12:00 AM", "%I:%M %p").time()
+
+            try:
+                end_time = datetime.strptime(endtime_str.strip().lower(), "%I:%M %p").time()
+            except:
+                end_time = datetime.strptime("11:59 PM", "%I:%M %p").time()
+
+            # Combine with dates
+            quiz_start = datetime.combine(start_date, start_time)
+            quiz_end = datetime.combine(end_date, end_time)
+
+            # Update status based on current datetime
+            if now < quiz_start and status != 'upcoming':
+                cursor.execute("UPDATE quiz SET status='upcoming' WHERE quiz_id=:1", (quiz_id,))
+                connection.commit()
+                status = 'upcoming'
+            elif quiz_start <= now <= quiz_end and status != 'active':
+                cursor.execute("UPDATE quiz SET status='active' WHERE quiz_id=:1", (quiz_id,))
+                connection.commit()
+                status = 'active'
+            elif now > quiz_end and status != 'inactive':
+                cursor.execute("UPDATE quiz SET status='inactive' WHERE quiz_id=:1", (quiz_id,))
                 connection.commit()
                 status = 'inactive'
 
+            # Only show active quizzes
             if status == 'active':
                 quizzes.append({
-                    'quiz_id': row[0],
-                    'name': row[1],
-                    'subject': row[2],
-                    'start_date': row[3].strftime("%Y-%m-%d"),
-                    'end_date': row[4].strftime("%Y-%m-%d"),
-                    'duration_minutes': row[5],
-                    'no_of_question': row[6],
-                    'mark_per_question': row[7],
-                    'starttime': row[8],
-                    'endtime': row[9],
+                    'quiz_id': quiz_id,
+                    'name': name,
+                    'subject': subject,
+                    'start_date': start_date.strftime("%Y-%m-%d"),
+                    'end_date': end_date.strftime("%Y-%m-%d"),
+                    'duration_minutes': duration_minutes,
+                    'no_of_question': no_of_question,
+                    'mark_per_question': mark_per_question,
+                    'starttime': starttime_str,
+                    'endtime': endtime_str,
                     'status': status
                 })
 
     except Exception as e:
         print(f"Error: {e}")
+
     finally:
-        cursor.close()
-        connection.close()
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
     return render_template("studenthomepage.html", quizzes=quizzes)
 
@@ -989,9 +1129,125 @@ def editstudentprofile():
     if "student_id" not in session:
         return redirect(url_for("login"))  
     return render_template("editstudentprofile.html", student=session)
-@app.route("editquiz")
-def editquiz():
-    pass
+
+@app.route("/edit_quiz/<int:quiz_id>", methods=["GET", "POST"])
+def edit_quiz(quiz_id):
+    if "teacher_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = connectdb()
+    cursor = connection.cursor()
+
+    try:
+        if request.method == "POST":
+            # Get form data
+            quiz_name = request.form.get("quiz_name").strip()
+            subject = request.form.get("subject").strip()
+            classname = request.form.get("classname").strip()
+            deptname = request.form.get("deptname").strip()
+            duration = int(request.form.get("duration") or 0)
+            start_date = request.form.get("start_date")
+            start_time = request.form.get("start_time")
+            start_ampm = request.form.get("start_ampm")
+            end_date = request.form.get("end_date")
+            end_time = request.form.get("end_time")
+            end_ampm = request.form.get("end_ampm")
+
+            # 1️⃣ Basic validations
+            if not quiz_name:
+                flash("Quiz name cannot be empty!", "error")
+                return redirect(url_for("edit_quiz", quiz_id=quiz_id))
+            if not subject:
+                flash("Subject cannot be empty!", "error")
+                return redirect(url_for("edit_quiz", quiz_id=quiz_id))
+            if duration <= 0:
+                flash("Duration must be greater than 0!", "error")
+                return redirect(url_for("edit_quiz", quiz_id=quiz_id))
+
+            # 2️⃣ Validate class exists
+            cursor.execute("SELECT class_id FROM class WHERE class_name=:1", (classname,))
+            class_row = cursor.fetchone()
+            if not class_row:
+                flash(f"Class '{classname}' does not exist!", "error")
+                return redirect(url_for("edit_quiz", quiz_id=quiz_id))
+            class_id = class_row[0]
+
+            # 3️⃣ Validate department exists
+            cursor.execute("SELECT dept_id FROM department WHERE dept_name=:1", (deptname,))
+            dept_row = cursor.fetchone()
+            if not dept_row:
+                flash(f"Department '{deptname}' does not exist!", "error")
+                return redirect(url_for("edit_quiz", quiz_id=quiz_id))
+            dept_id = dept_row[0]
+
+            # 4️⃣ Validate start < end datetime
+            start_dt = datetime.strptime(f"{start_date} {start_time} {start_ampm}", "%Y-%m-%d %I:%M %p")
+            end_dt = datetime.strptime(f"{end_date} {end_time} {end_ampm}", "%Y-%m-%d %I:%M %p")
+            if start_dt >= end_dt:
+                flash("Start date/time must be before end date/time!", "error")
+                return redirect(url_for("edit_quiz", quiz_id=quiz_id))
+
+            # 5️⃣ Determine status
+            status = "active" if end_dt > datetime.now() else "inactive"
+
+            # 6️⃣ Update quiz including status
+            cursor.execute("""
+                UPDATE quiz SET 
+                    name=:1, 
+                    subject=:2, 
+                    class_id=:3, 
+                    dept_id=:4, 
+                    duration_minutes=:5, 
+                    start_date=TO_DATE(:6, 'YYYY-MM-DD'), 
+                    starttime=:7, 
+                    end_date=TO_DATE(:8, 'YYYY-MM-DD'), 
+                    endtime=:9,
+                    status=:10
+                WHERE quiz_id=:11
+            """, (
+                quiz_name, subject, class_id, dept_id, duration,
+                start_date, f"{start_time} {start_ampm}",
+                end_date, f"{end_time} {end_ampm}", status, quiz_id
+            ))
+            connection.commit()
+            flash("Quiz updated successfully!", "success")
+            return redirect(url_for("activequizzes"))
+
+        # GET request: fetch quiz info
+        cursor.execute("SELECT * FROM quiz WHERE quiz_id=:1", (quiz_id,))
+        quiz_row = cursor.fetchone()
+
+        cursor.execute("SELECT class_name FROM class WHERE class_id=:1", (quiz_row[3],))
+        class_name = cursor.fetchone()[0]
+
+        cursor.execute("SELECT dept_name FROM department WHERE dept_id=:1", (quiz_row[4],))
+        dept_name = cursor.fetchone()[0]
+
+        quiz = {
+            'quiz_id': quiz_id,
+            'quiz_name': quiz_row[1],
+            'subject': quiz_row[2],
+            'classname': class_name,
+            'deptname': dept_name,
+            'duration': quiz_row[9],
+            'start_date': quiz_row[7].strftime("%Y-%m-%d"),
+            'start_time': quiz_row[11].split()[0],
+            'start_ampm': quiz_row[11].split()[1],
+            'end_date': quiz_row[8].strftime("%Y-%m-%d"),
+            'end_time': quiz_row[12].split()[0],
+            'end_ampm': quiz_row[12].split()[1]
+        }
+
+    except Exception as e:
+        print(f"Error: {e}")
+        flash(f"An error occurred: {e}", "danger")
+        return redirect(url_for("activequizzes"))
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return render_template("edit_quiz.html", quiz=quiz)
 
 if __name__ == "__main__":
   
