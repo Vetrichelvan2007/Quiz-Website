@@ -15,8 +15,8 @@ app.secret_key = "your_secret_key_here"
 def connectdb():
     try:
         return oracledb.connect(
-            user="system",
-            password="vetri",
+            user="DB_USERNAME",
+            password="DB_PASSWORD",
             dsn="localhost:1521/XEPDB1"
         )
     except Exception as e:
@@ -184,10 +184,6 @@ def teacher_dashboard():
 
             current_status = row[7]
 
-            # ✅ Update logic:
-            #  - Before start → upcoming
-            #  - Between start & end → active
-            #  - After end → inactive
             if now < quiz_start and current_status != 'upcoming':
                 cursor.execute("UPDATE quiz SET status='upcoming' WHERE quiz_id=:1", (quiz_id,))
                 connection.commit()
@@ -203,7 +199,6 @@ def teacher_dashboard():
                 connection.commit()
                 current_status = 'inactive'
 
-            # Fetch class and department names
             class_name = cursor.execute("SELECT class_name FROM class WHERE class_id=:1", (row[9],)).fetchone()[0]
             dept_name = cursor.execute("SELECT dept_name FROM department WHERE dept_id=:1", (row[10],)).fetchone()[0]
 
@@ -876,7 +871,7 @@ def quiz(quiz_id):
         if current_datetime < quiz_start_datetime:
             return f"<h3>⏳ The quiz hasn't started yet. It will be available at {start_time_str} on {start_date.strftime('%Y-%m-%d')}.</h3>"
 
-        # ✅ Quiz has started, continue...
+       
 
         if request.method == 'POST':
             answers = {}
@@ -1140,7 +1135,7 @@ def edit_quiz(quiz_id):
 
     try:
         if request.method == "POST":
-            # Get form data
+           
             quiz_name = request.form.get("quiz_name").strip()
             subject = request.form.get("subject").strip()
             classname = request.form.get("classname").strip()
@@ -1153,7 +1148,7 @@ def edit_quiz(quiz_id):
             end_time = request.form.get("end_time")
             end_ampm = request.form.get("end_ampm")
 
-            # 1️⃣ Basic validations
+            
             if not quiz_name:
                 flash("Quiz name cannot be empty!", "error")
                 return redirect(url_for("edit_quiz", quiz_id=quiz_id))
@@ -1164,7 +1159,7 @@ def edit_quiz(quiz_id):
                 flash("Duration must be greater than 0!", "error")
                 return redirect(url_for("edit_quiz", quiz_id=quiz_id))
 
-            # 2️⃣ Validate class exists
+            
             cursor.execute("SELECT class_id FROM class WHERE class_name=:1", (classname,))
             class_row = cursor.fetchone()
             if not class_row:
@@ -1172,7 +1167,7 @@ def edit_quiz(quiz_id):
                 return redirect(url_for("edit_quiz", quiz_id=quiz_id))
             class_id = class_row[0]
 
-            # 3️⃣ Validate department exists
+           
             cursor.execute("SELECT dept_id FROM department WHERE dept_name=:1", (deptname,))
             dept_row = cursor.fetchone()
             if not dept_row:
@@ -1180,17 +1175,17 @@ def edit_quiz(quiz_id):
                 return redirect(url_for("edit_quiz", quiz_id=quiz_id))
             dept_id = dept_row[0]
 
-            # 4️⃣ Validate start < end datetime
+           
             start_dt = datetime.strptime(f"{start_date} {start_time} {start_ampm}", "%Y-%m-%d %I:%M %p")
             end_dt = datetime.strptime(f"{end_date} {end_time} {end_ampm}", "%Y-%m-%d %I:%M %p")
             if start_dt >= end_dt:
                 flash("Start date/time must be before end date/time!", "error")
                 return redirect(url_for("edit_quiz", quiz_id=quiz_id))
 
-            # 5️⃣ Determine status
+          
             status = "active" if end_dt > datetime.now() else "inactive"
 
-            # 6️⃣ Update quiz including status
+            
             cursor.execute("""
                 UPDATE quiz SET 
                     name=:1, 
@@ -1213,7 +1208,7 @@ def edit_quiz(quiz_id):
             flash("Quiz updated successfully!", "success")
             return redirect(url_for("activequizzes"))
 
-        # GET request: fetch quiz info
+        
         cursor.execute("SELECT * FROM quiz WHERE quiz_id=:1", (quiz_id,))
         quiz_row = cursor.fetchone()
 
